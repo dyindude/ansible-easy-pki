@@ -1,0 +1,12 @@
+- hosts: all
+  vars:
+    cert_country: "Milky Way"
+    cert_state: "Widow"
+    cert_locality: "Citadel"
+    cert_organization: "Alliance"
+    cert_ou: "N7"
+    cert_domain: "alliance.citadel.widow.milkway.universe"
+  roles:
+    - { role: cert, cert_hosts: [ "ldap", "www" ], cert_name: "webs" }
+    - { role: cert, cert_hosts: [ "*" ], cert_name: "wildcard", cert_canonical: true }
+
