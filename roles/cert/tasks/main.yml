@@ -1,6 +1,6 @@
 ---
 - debug:
-    var: (cert_hosts_canonical + ((cert_hosts | map('regex_replace','$','.' + cert_domain)) | list)) | join(',')
+    var: ((cert_hosts | first) == '*') | ternary('a','b')
 - name: write out ca template
   template:
     src: cfssl.json
@@ -18,6 +18,13 @@
     - name: generate ca cert/key
       shell: "{{ cfssl }} genkey -initca workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/ca.{{ cert_domain }}"
 
-- name: generate host certs/keys
-  shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ (cert_hosts_canonical + ((cert_hosts | map('regex_replace','$','.' + cert_domain)) | list)) | join(',') }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ cert_hosts | first }}.{{ cert_domain }}"
+- name: manage host certificate
+  block:
+    - name: check if cert has expired
+      openssl_certificate:
+        path: output/{{ cert_filename }}.pem
+        has_expired: False
+  rescue:
+    - name: generate host certs/keys
+      shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ (cert_hosts_canonical + ((cert_hosts | map('regex_replace','$','.' + cert_domain)) | list)) | join(',') }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ cert_filename }}"
 
