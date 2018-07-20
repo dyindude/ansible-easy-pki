@@ -8,9 +8,6 @@
 
 - name: manage ca certificate
   block:
-    - name: check if ca cert already exists
-      stat:
-        path: output/ca.{{ cert_domain }}.pem
     - name: check if ca cert has expired
       openssl_certificate:
         path: output/ca.{{ cert_domain }}.pem
