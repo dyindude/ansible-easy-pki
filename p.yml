@@ -6,6 +6,7 @@
     cert_organization: "Alliance"
     cert_ou: "N7"
     cert_domain: "alliance.citadel.widow.milkway.universe"
+    cert_force_regenerate: true
   roles:
     - { role: cert, cert_hosts: [ "ldap", "www" ] }
     - { role: cert, cert_hosts: [ "*" ], cert_canonical: true }
