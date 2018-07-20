@@ -5,8 +5,20 @@
     dest: output/{{ cert_domain }}.json
   with_items:
     - "{{ cert_hosts }}"
-- name: generate ca cert/key
-  shell: "{{ cfssl }} genkey -initca workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/ca.{{ cert_domain }}"
+
+- name: manage ca certificate
+  block:
+    - name: check if ca cert already exists
+      stat:
+        path: output/ca.{{ cert_domain }}.pem
+    - name: check if ca cert has expired
+      openssl_certificate:
+        path: output/ca.{{ cert_domain }}.pem
+        has_expired: False
+  rescue:
+    - name: generate ca cert/key
+      shell: "{{ cfssl }} genkey -initca workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/ca.{{ cert_domain }}"
+
 - name: generate host certs/keys
   shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ item }}.{{ cert_domain }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ item }}.{{ cert_domain }}"
   with_items:
