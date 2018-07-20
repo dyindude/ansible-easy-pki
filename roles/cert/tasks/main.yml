@@ -20,7 +20,5 @@
       shell: "{{ cfssl }} genkey -initca workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/ca.{{ cert_domain }}"
 
 - name: generate host certs/keys
-  shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ item }}.{{ cert_domain }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ item }}.{{ cert_domain }}"
-  with_items:
-    - "{{ cert_hosts }}"
+  shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ cert_hosts | map('regex_replace','$','.' + cert_domain) | list | join(',') }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ cert_hosts | first }}.{{ cert_domain }}"
 
