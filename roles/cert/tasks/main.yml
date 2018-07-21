@@ -30,6 +30,7 @@
       shell: "[[ $(openssl verify -CAfile output/ca.{{ cert_domain }}.pem output/{{ cert_filename }}.pem |& grep OK | wc -c) -ne 0 ]]"
       args:
         executable: /bin/bash
+      changed_when: False
   rescue:
     - name: generate host certs/keys
       shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ (cert_hosts_canonical + ((cert_hosts | map('regex_replace','$','.' + cert_domain)) | list)) | join(',') }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ cert_filename }}"
