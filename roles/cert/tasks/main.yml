@@ -27,7 +27,9 @@
         has_expired: False
         valid_at: "{{ cert_valid_at }}"
     - name: check if our ca cert is valid for this cert
-      shell: openssl verify -CAfile output/ca.{{ cert_domain }}.pem output/{{ cert_filename }}.pem #doesn't give us the eerror handling we want
+      shell: "[[ $(openssl verify -CAfile output/ca.{{ cert_domain }}.pem output/{{ cert_filename }}.pem |& grep OK | wc -c) -ne 0 ]]"
+      args:
+        executable: /bin/bash
   rescue:
     - name: generate host certs/keys
       shell: "{{ cfssl }} gencert -ca workdir/output/ca.{{ cert_domain }}.pem -ca-key workdir/output/ca.{{ cert_domain }}-key.pem -hostname={{ (cert_hosts_canonical + ((cert_hosts | map('regex_replace','$','.' + cert_domain)) | list)) | join(',') }} workdir/output/{{ cert_domain }}.json | {{ cfssljson }} -bare workdir/output/{{ cert_filename }}"
